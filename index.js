@@ -1,6 +1,10 @@
 var arDrone = require('ar-drone');
 var express = require('express');
 
+var https = require('https');
+var http = require('http');
+var fs = require('fs');
+
 var client = arDrone.createClient();
 var app = express();
 
@@ -68,4 +72,8 @@ client.on('batteryChange', function(level) {
     console.log('Battery Update:', level);
 });
 
-app.listen(3000);
+http.createServer(app).listen(3000);
+https.createServer({
+    cert: fs.readFileSync(__dirname + "/certs/server.crt"),
+    key: fs.readFileSync(__dirname + "/certs/server.key")
+}, app).listen(3001);
