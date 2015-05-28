@@ -32,7 +32,7 @@ app.get('/command/go/:commandName', function(req, res) {
     // Implement a duration for commands that operate continuously.
     // ex: `/command/clockwise/`
     // ex: `/command/clockwise/2000`
-    var continuousCommands = ['clockwise', 'up'];
+    var continuousCommands = ['clockwise', 'up', 'down', 'left', 'right'];
 
     if (continuousCommands.indexOf(req.params.commandName) >= 0) {
 
@@ -41,7 +41,7 @@ app.get('/command/go/:commandName', function(req, res) {
         setTimeout(function() {
             client.stop();
             res.end('rotation complete');
-        }, 2000);
+        }, 1000);
     }
 
     // For commands that require a duration
