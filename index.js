@@ -46,7 +46,7 @@ app.get('/command/go/:commandName', function(req, res) {
 
         setTimeout(function() {
             client.stop();
-            res.end('rotation complete');
+            res.end(req.params.commandName + ' command complete');
         }, 1000);
     }
 
