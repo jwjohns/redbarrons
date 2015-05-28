@@ -4,30 +4,48 @@ var express = require('express');
 var client = arDrone.createClient();
 var app = express();
 
-app.get('/takeoff', function(req, res) {
-    client.takeoff();
-    res.end('done');
+app.get('/command/:commandName/:commandValue?/:commandDuration?', function(req, res) {
+
+    // Takeoff: `/command/takeoff`
+    if (req.params.commandName === 'takeoff') {
+        client.takeoff(function() {
+            res.end('takeoff complete');
+        });
+    }
+
+    // Landing: `/command/land`
+    if (req.params.commandName === 'land') {
+        client.stop();
+        client.land(function() {
+            res.end('landing complete');
+        });
+    }
+
+    // Continuous Rotation: `/command/rotate/0.5`
+    // Finite Rotation: `/command/rotate/0.5/5000`
+    if (req.params.commandName === 'rotate') {
+
+        if (!req.params.commandValue) {
+            res.end('Error: You need to specify a speed');
+            return;
+        }
+
+        client.clockwise(req.params.commandValue);
+
+        if (req.params.commandDuration) {
+            setTimeout(function(){
+                client.stop();
+                res.end('rotation complete');
+            }, req.params.commandDuration);
+        } else {
+            res.end('rotation started');
+        }
+    }
+
 });
 
-app.get('/land', function(req, res) {
-    client.stop();
-    client.land();
-    res.end('done');
+client.on('batteryChange', function(level) {
+    console.log('Battery Update:', level);
 });
-
-// client.takeoff();
-//
-// client
-//     .after(2000, function() {
-//         this.clockwise(1);
-//     })
-//     .after(2000, function() {
-//         this.stop();
-//         this.land();
-//     });
-
-client.on('batteryChange', console.log);
 
 app.listen(3000);
-
-// client.createRepl();
