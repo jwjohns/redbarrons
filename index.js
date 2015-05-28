@@ -4,6 +4,8 @@ var express = require('express');
 var client = arDrone.createClient();
 var app = express();
 
+app.use(express.static('static'));
+
 app.get('/command/:commandName', function(req, res) {
 
     console.log('Command Received:', req.url);
