@@ -19,17 +19,17 @@ app.get('/command/:commandName', function(req, res) {
 
         console.log('got to takeoff!');
 
-        client.takeoff(function() {
-            res.end('takeoff complete');
-        });
+        client.takeoff(function() {});
+
+        res.end('takeoff complete');
     }
 
     // Landing: `/command/land`
     if (req.params.commandName === 'land') {
         client.stop();
-        client.land(function() {
-            res.end('landing complete');
-        });
+        client.land(function() {});
+
+        res.end('landing complete');
     }
 });
 
