@@ -1,0 +1,19 @@
+{
+  "name": "redbarrons",
+  "version": "1.0.0",
+  "description": "Code repo for Red Barrons NodeCopter Flight team.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sjurba/redbarrons.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sjurba/redbarrons/issues"
+  },
+  "homepage": "https://github.com/sjurba/redbarrons"
+}
