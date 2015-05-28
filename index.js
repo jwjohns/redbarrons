@@ -4,6 +4,8 @@ var express = require('express');
 var client = arDrone.createClient();
 var app = express();
 
+client.config('general:navdata_demo', 'FALSE');
+
 app.get('/command/:commandName/:commandValue?/:commandDuration?', function(req, res) {
 
     // Takeoff: `/command/takeoff`
@@ -21,25 +23,44 @@ app.get('/command/:commandName/:commandValue?/:commandDuration?', function(req, 
         });
     }
 
-    // Continuous Rotation: `/command/rotate/0.5`
-    // Finite Rotation: `/command/rotate/0.5/5000`
-    if (req.params.commandName === 'rotate') {
+    // Implement a duration for commands that operate continuously.
+    // ex: `/command/clockwise/0.2`
+    // ex: `/command/clockwise/0.2/2000`
+    var continuousCommands = ['clockwise'];
+
+    if (continuousCommands.indexOf(req.params.commandName) >= 0) {
 
         if (!req.params.commandValue) {
             res.end('Error: You need to specify a speed');
             return;
         }
 
-        client.clockwise(req.params.commandValue);
+        client[req.params.commandName](req.params.commandValue);
 
         if (req.params.commandDuration) {
-            setTimeout(function(){
+            setTimeout(function() {
                 client.stop();
                 res.end('rotation complete');
             }, req.params.commandDuration);
         } else {
             res.end('rotation started');
         }
+    }
+
+    // For commands that require a duration
+    // ex: `/command/animate/yawDance/2000`
+    var durationSpecificCommands = ['animate'];
+
+    if (durationSpecificCommands.indexOf(req.params.commandName) >= 0) {
+
+        if (!req.params.commandValue || !req.params.commandDuration) {
+            res.end('Error: You need to specify a value and a duration');
+            return;
+        }
+
+        client[req.params.commandName](req.params.commandValue, req.params.commandDuration);
+
+        res.end(req.params.commandName + ' started');
     }
 
 });
