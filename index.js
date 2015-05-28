@@ -72,8 +72,7 @@ client.on('batteryChange', function(level) {
     console.log('Battery Update:', level);
 });
 
-http.createServer(app).listen(3000);
 https.createServer({
     cert: fs.readFileSync(__dirname + "/certs/server.crt"),
     key: fs.readFileSync(__dirname + "/certs/server.key")
-}, app).listen(3001);
+}, app).listen(3000);
