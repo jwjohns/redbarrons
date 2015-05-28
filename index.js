@@ -30,11 +30,6 @@ app.get('/command/:commandName/:commandValue?/:commandDuration?', function(req, 
 
     if (continuousCommands.indexOf(req.params.commandName) >= 0) {
 
-        if (!req.params.commandValue) {
-            res.end('Error: You need to specify a speed');
-            return;
-        }
-
         client[req.params.commandName](req.params.commandValue);
 
         if (req.params.commandDuration) {
