@@ -4,7 +4,7 @@ var express = require('express');
 var client = arDrone.createClient();
 var app = express();
 
-app.get('/command/:commandName/:commandValue?/:commandDuration?', function(req, res) {
+app.get('/command/:commandName', function(req, res) {
 
     console.log('Command Received:', req.url);
 
@@ -25,24 +25,23 @@ app.get('/command/:commandName/:commandValue?/:commandDuration?', function(req, 
             res.end('landing complete');
         });
     }
+});
+
+app.get('/command/go/:commandName', function(req, res) {
 
     // Implement a duration for commands that operate continuously.
-    // ex: `/command/clockwise/0.2`
-    // ex: `/command/clockwise/0.2/2000`
-    var continuousCommands = ['clockwise'];
+    // ex: `/command/clockwise/`
+    // ex: `/command/clockwise/2000`
+    var continuousCommands = ['clockwise', 'up'];
 
     if (continuousCommands.indexOf(req.params.commandName) >= 0) {
 
-        client[req.params.commandName](req.params.commandValue);
+        client[req.params.commandName](0.5);
 
-        if (req.params.commandDuration) {
-            setTimeout(function() {
-                client.stop();
-                res.end('rotation complete');
-            }, req.params.commandDuration);
-        } else {
-            res.end('rotation started');
-        }
+        setTimeout(function() {
+            client.stop();
+            res.end('rotation complete');
+        }, 2000);
     }
 
     // For commands that require a duration
