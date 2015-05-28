@@ -4,12 +4,15 @@ var express = require('express');
 var client = arDrone.createClient();
 var app = express();
 
-client.config('general:navdata_demo', 'FALSE');
-
 app.get('/command/:commandName/:commandValue?/:commandDuration?', function(req, res) {
+
+    console.log('Command Received:', req.url);
 
     // Takeoff: `/command/takeoff`
     if (req.params.commandName === 'takeoff') {
+
+        console.log('got to takeoff!');
+
         client.takeoff(function() {
             res.end('takeoff complete');
         });
