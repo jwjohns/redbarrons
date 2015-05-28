@@ -1,1 +1,87 @@
-foo
+<html>
+
+<head>
+    <title>Testing</title>
+    <script src="https://code.jquery.com/jquery-2.1.4.min.js" charset="utf-8"></script>
+</head>
+
+<body>
+    <script type="text/javascript">
+        $(function() {
+
+            var issued = false;
+
+            function issueCmd(cmd) {
+                if (!issued) {
+                    issued = true;
+                    $.get('https://localhost:3000/command/' + cmd).done(function(data) {
+                        console.log(data);
+                    });
+                }
+
+            }
+
+            console.log('onload');
+
+            window.start = function() {
+                console.log('start');
+                var recognition = new webkitSpeechRecognition();
+                recognition.continuous = false;
+                recognition.interimResults = true;
+                recognition.lang = 'en-US';
+                recognition.onresult = function(event) {
+                    var res = event.results[0];
+                    var str = res[0].transcript;
+                    console.log(str, res);
+                    if (str.trim() === 'go up') {
+                        issueCmd('go/up');
+                    }
+                    if (str.trim() === 'go down') {
+                        issueCmd('go/down');
+                    }
+                    if (str.trim() === 'go left') {
+                        issueCmd('go/left');
+                    }
+                    if (str.trim() === 'go right') {
+                        issueCmd('go/right');
+                    }
+                    if (str.trim() === 'take off') {
+                        issueCmd('takeoff');
+                    }
+                    if (str.trim() === 'land') {
+                        issueCmd('land');
+                    }
+                    if (str.trim() === 'go clockwise') {
+                        issueCmd('go/clockwise');
+                    }
+                    if (res.isFinal) {
+                        issued = false;
+                        recognition.stop();
+                        window.start();
+                    }
+                }
+                recognition.start();
+            }
+
+            window.stop = function() {
+                console.log('stop');
+                recognition.stop();
+            }
+
+            window.land = function() {
+                console.log('land');
+                recognition.stop();
+                issueCmd('land');
+            }
+
+        });
+    </script>
+
+    <div class="">
+        <button type="button" name="start" onclick="start()">Start</button>
+        <button type="button" name="stop" onclick="stop()">Stop</button>
+        <button type="button" name="land" onclick="land()">Land</button>
+    </div>
+</body>
+
+</html>
