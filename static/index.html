@@ -14,7 +14,7 @@
             function issueCmd(cmd) {
                 if (!issued) {
                     issued = true;
-                    $.get('https://localhost:3000/command/' + cmd).done(function(data) {
+                    $.get('/command/' + cmd).done(function(data) {
                         console.log(data);
                     });
                 }
@@ -53,6 +53,9 @@
                     }
                     if (str.trim() === 'go clockwise') {
                         issueCmd('go/clockwise');
+                    }
+                    if (str.trim() === 'flip') {
+                        issueCmd('go/animate');
                     }
                     if (res.isFinal) {
                         issued = false;

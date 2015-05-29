@@ -56,12 +56,7 @@ app.get('/command/go/:commandName', function(req, res) {
 
     if (durationSpecificCommands.indexOf(req.params.commandName) >= 0) {
 
-        if (!req.params.commandValue || !req.params.commandDuration) {
-            res.end('Error: You need to specify a value and a duration');
-            return;
-        }
-
-        client[req.params.commandName](req.params.commandValue, req.params.commandDuration);
+        client[req.params.commandName]('flipAhead', 3000);
 
         res.end(req.params.commandName + ' started');
     }
