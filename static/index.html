@@ -9,11 +9,15 @@
     <script type="text/javascript">
         $(function() {
 
+            var recognition;
             var issued = false;
+            var stopped = true;
 
             function issueCmd(cmd) {
                 if (!issued) {
-                    issued = true;
+                    issued = cmd;
+                    console.log('issuing', cmd);
+                    $('#commands').html('<b>' + cmd + '</b>');
                     $.get('/command/' + cmd).done(function(data) {
                         console.log(data);
                     });
@@ -23,68 +27,175 @@
 
             console.log('onload');
 
+            var goCmds = {
+                up: 'up',
+                down: 'down',
+                left: 'left',
+                right: 'right',
+                clockwise: 'clockwise',
+                'counterclockwise': 'counterClockwise',
+                forward: 'forward',
+                backward: 'backward'
+            }
+
+
+            function handleGo(str) {
+                var m = str.match(/go ([a-z]+)/);
+                if (m) {
+                    var cmd = goCmds[m[1]];
+                    if (cmd) {
+                        issueCmd('go/' + cmd);
+                    }
+                }
+            }
+
+            var flipCmds = {
+                back: 'backFlip',
+                front: 'frontFlip',
+                left: 'leftFlip',
+                right: 'rightFlip'
+            };
+
+            function handleFlip(str) {
+                var m = str.match(/([a-z]+) ?flip/);
+                if (m) {
+                    var cmd = flipCmds[m[1]];
+                    if (cmd) {
+                        issueCmd('go/' + cmd);
+                    }
+                }
+            }
+
+            var basicCmds = {
+                'take off': 'takeoff',
+                'land': 'land'
+            }
+
+            function handleBasic(str) {
+                var cmd = basicCmds[str.trim()];
+                if (cmd) {
+                    issueCmd(cmd);
+                }
+            }
+
             window.start = function() {
                 console.log('start');
-                var recognition = new webkitSpeechRecognition();
+                stopped = false;
+                recognition = new webkitSpeechRecognition();
                 recognition.continuous = false;
                 recognition.interimResults = true;
                 recognition.lang = 'en-US';
                 recognition.onresult = function(event) {
                     var res = event.results[0];
                     var str = res[0].transcript;
-                    console.log(str, res);
-                    if (str.trim() === 'go up') {
-                        issueCmd('go/up');
-                    }
-                    if (str.trim() === 'go down') {
-                        issueCmd('go/down');
-                    }
-                    if (str.trim() === 'go left') {
-                        issueCmd('go/left');
-                    }
-                    if (str.trim() === 'go right') {
-                        issueCmd('go/right');
-                    }
-                    if (str.trim() === 'take off') {
-                        issueCmd('takeoff');
-                    }
-                    if (str.trim() === 'land') {
-                        issueCmd('land');
-                    }
-                    if (str.trim() === 'go clockwise') {
-                        issueCmd('go/clockwise');
-                    }
-                    if (str.trim() === 'flip') {
-                        issueCmd('go/animate');
-                    }
                     if (res.isFinal) {
                         issued = false;
                         recognition.stop();
                         window.start();
+                    } else if (!issued) {
+                        $('#commands').text(str);
+                        console.log(str, res);
+                        handleBasic(str);
+                        handleGo(str);
+                        handleFlip(str);
                     }
                 }
+
+                recognition.onstart = function(err) {
+                    console.log('Start', err);
+                };
+
+                recognition.onerror = function(err) {
+                    console.log('Error', err);
+                };
+                recognition.onend = function(err) {
+                    console.log('End', err);
+                    if (!stopped) {
+                        window.start();
+                    }
+                };
+
                 recognition.start();
             }
 
             window.stop = function() {
                 console.log('stop');
+                stopped = true;
                 recognition.stop();
             }
 
-            window.land = function() {
-                console.log('land');
-                recognition.stop();
-                issueCmd('land');
+            window.run = function(cmd) {
+                console.log(cmd);
+                if (recognition) {
+                    recognition.stop();
+                }
+                issueCmd(cmd);
+                issued = false;
             }
 
         });
     </script>
 
+
+    <script type="text/javascript">
+        $(function() {
+
+            String.prototype.interpolate = function(o) {
+                return this.replace(/{([^{}]*)}/g,
+                    function(a, b) {
+                        var r = o[b];
+                        return typeof r === 'string' || typeof r === 'number' ? r : a;
+                    }
+                );
+            };
+
+            if (!webkitSpeechRecognition) {
+                $('#start,#stop').hide();
+            }
+            // var acc, rot;
+            // if (window.DeviceMotionEvent !== undefined) {
+            //     window.ondevicemotion = function(event) {
+            //         acc = {
+            //             x: event.accelerationIncludingGravity.x || 0,
+            //             y: event.accelerationIncludingGravity.y || 0,
+            //             z: event.accelerationIncludingGravity.z || 0
+            //         }
+            //         rotation = event.rotationRate;
+            //         if (rotation != null) {
+            //             rot = {
+            //                 a: Math.round(rotation.alpha),
+            //                 b: Math.round(rotation.beta),
+            //                 g: Math.round(rotation.gamma)
+            //             }
+            //
+            //         }
+            //     }
+            //     setInterval(function() {
+            //         console.log(event, acc, rot);
+            //         $('#acceleration').text("Acceleration: {x}, {y}, {z}".interpolate(acc));
+            //         if (rot) {
+            //             $('#rotation').text("Rotation: {a}, {b}, {g}".interpolate(rot));
+            //         }
+            //     }, 500);
+            // }
+
+
+
+
+        });
+    </script>
     <div class="">
-        <button type="button" name="start" onclick="start()">Start</button>
-        <button type="button" name="stop" onclick="stop()">Stop</button>
-        <button type="button" name="land" onclick="land()">Land</button>
+        <button type="button" id="start" onclick="start()">Start</button>
+        <button type="button" id="stop" onclick="stop()">Stop</button>
+        <button type="button" id="takeoff" onclick="run('takeoff')">Takeoff</button>
+        <button type="button" id="left" onclick="run('go/left')">Left</button>
+        <button type="button" id="right" onclick="run('go/right')">Right</button>
+        <button type="button" id="land" onclick="run('land')">Land</button>
     </div>
+
+    <span id="commands"></span>
+    <span id="acceleration"></span>
+    <span id="rotation"></span>
 </body>
 
 </html>

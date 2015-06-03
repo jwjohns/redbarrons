@@ -1,11 +1,26 @@
-var arDrone = require('ar-drone');
+'use strict';
+
+// var arDrone = require('ar-drone');
 var express = require('express');
 
 var https = require('https');
-var http = require('http');
 var fs = require('fs');
 
-var client = arDrone.createClient();
+//RS_B181682
+
+var args = require('minimist')(process.argv, {
+    alias: {
+        'type': 't'
+    },
+    'default': {
+        'type': 'rolling-spider'
+    }
+});
+
+
+
+var drone = require('./lib/' + args.type + '.js');
+//var drone = require('./lib/debug.js');
 var app = express();
 
 app.use(express.static('static'));
@@ -19,55 +34,57 @@ app.get('/command/:commandName', function(req, res) {
 
         console.log('got to takeoff!');
 
-        client.takeoff(function() {});
+        drone.takeoff(function() {});
 
         res.end('takeoff complete');
-    }
+    } else if (req.params.commandName === 'land') {
+        // Landing: `/command/land`
 
-    // Landing: `/command/land`
-    if (req.params.commandName === 'land') {
-        client.stop();
-        client.land(function() {});
+        drone.land(function() {});
 
         res.end('landing complete');
+    } else {
+        res.end('unkowne command');
     }
 });
 
 app.get('/command/go/:commandName', function(req, res) {
 
+    console.log('Go command Received:', req.url);
     // Implement a duration for commands that operate continuously.
     // ex: `/command/clockwise/`
     // ex: `/command/clockwise/2000`
-    var continuousCommands = ['clockwise', 'up', 'down', 'left', 'right'];
+    var continuousCommands = ['up', 'down', 'left', 'right', 'forward', 'backward', 'clockwise', 'counterClockwise'];
 
     if (continuousCommands.indexOf(req.params.commandName) >= 0) {
 
-        client[req.params.commandName](0.5);
+        res.end(req.params.commandName + ' command complete');
+        drone.move(req.params.commandName, 0.5, 1000, function() {
+            console.log(req.params.commandName + ' command complete');
+        });
 
-        setTimeout(function() {
-            client.stop();
-            res.end(req.params.commandName + ' command complete');
-        }, 1000);
     }
 
     // For commands that require a duration
-    // ex: `/command/animate/yawDance/2000`
-    var durationSpecificCommands = ['animate'];
+    // ex: `/command/go/backFlip`
+    var durationSpecificCommands = ['backFlip', 'frontFlip', 'leftFlip', 'rightFlip'];
 
     if (durationSpecificCommands.indexOf(req.params.commandName) >= 0) {
 
-        client[req.params.commandName]('flipAhead', 3000);
-
-        res.end(req.params.commandName + ' started');
+        drone.animate(req.params.commandName, 1000, function() {
+            console.log(req.params.commandName + ' completed');
+        });
+        res.end(req.params.commandName + ' command complete');
     }
 
 });
 
-client.on('batteryChange', function(level) {
-    console.log('Battery Update:', level);
+drone.battery(function(level) {
+    console.log('Battery Update:', level + '%');
 });
 
 https.createServer({
-    cert: fs.readFileSync(__dirname + "/certs/server.crt"),
-    key: fs.readFileSync(__dirname + "/certs/server.key")
+    cert: fs.readFileSync(__dirname + '/certs/server.crt'),
+    key: fs.readFileSync(__dirname + '/certs/server.key')
 }, app).listen(3000);
+console.log('listening');

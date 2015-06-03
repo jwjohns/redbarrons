@@ -19,6 +19,8 @@
   "dependencies": {
     "ar-drone": "^0.3.3",
     "express": "^4.12.4",
+    "minimist": "^1.1.1",
+    "node-rolling-spider": "FluffyJack/node-rolling-spider",
     "numeral": "^1.5.3",
     "speakable": "git://github.com/sreuter/node-speakable"
   }
