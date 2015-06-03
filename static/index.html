@@ -13,14 +13,37 @@
             var issued = false;
             var stopped = true;
 
+            var ws;
+
+            if (WebSocket) {
+                ws = new WebSocket("wss://localhost:3001/");
+                ws.onmessage = function(event) {
+                    console.log(event.data);
+                    var data = JSON.parse(event.data);
+                    if (data.event === 'battery') {
+                        $('#battery').text('Battery: ' + data.value + '%');
+                    }
+                }
+                ws.onerror = function(err) {
+                    console.log(err);
+                };
+                ws.onopen = function() {
+                    console.log('Connected to web socket');
+                }
+            }
+
             function issueCmd(cmd) {
                 if (!issued) {
                     issued = cmd;
                     console.log('issuing', cmd);
                     $('#commands').html('<b>' + cmd + '</b>');
-                    $.get('/command/' + cmd).done(function(data) {
-                        console.log(data);
-                    });
+                    if (ws) {
+                        ws.send(cmd);
+                    } else {
+                        $.get('/command/' + cmd).done(function(data) {
+                            console.log(data);
+                        });
+                    }
                 }
 
             }
@@ -196,6 +219,7 @@
     <span id="commands"></span>
     <span id="acceleration"></span>
     <span id="rotation"></span>
+    <span id="battery"></span>
 </body>
 
 </html>

@@ -1,11 +1,5 @@
 'use strict';
 
-// var arDrone = require('ar-drone');
-var express = require('express');
-
-var https = require('https');
-var fs = require('fs');
-
 //RS_B181682
 
 var args = require('minimist')(process.argv, {
@@ -20,71 +14,39 @@ var args = require('minimist')(process.argv, {
 
 
 var drone = require('./lib/' + args.type + '.js');
-//var drone = require('./lib/debug.js');
-var app = express();
 
-app.use(express.static('static'));
+var basicCmds = ['takeoff', 'land'];
+var continuousCommands = ['up', 'down', 'left', 'right', 'forward', 'backward', 'clockwise', 'counterClockwise'];
+var durationSpecificCommands = ['backFlip', 'frontFlip', 'leftFlip', 'rightFlip'];
 
-app.get('/command/:commandName', function(req, res) {
+var client = {
+    cmd: function(cmd) {
+        var parts = cmd.split('/');
+        if (parts.length === 1 && basicCmds.indexOf(parts[0]) >= 0) {
+            drone[parts[0]](function() {});
+        } else if (parts.length === 2 && parts[0] === 'go') {
+            if (continuousCommands.indexOf(parts[1]) >= 0) {
+                drone.move(parts[1], 0.5, 1000, function() {
+                    console.log(cmd + ' command complete');
+                });
+            } else if (durationSpecificCommands.indexOf(parts[1]) >= 0) {
+                drone.animate(parts[1], 1000, function() {
+                    console.log(cmd + ' completed');
+                });
+            }
+        }
+    },
+    broadcasters: []
+};
 
-    console.log('Command Received:', req.url);
-
-    // Takeoff: `/command/takeoff`
-    if (req.params.commandName === 'takeoff') {
-
-        console.log('got to takeoff!');
-
-        drone.takeoff(function() {});
-
-        res.end('takeoff complete');
-    } else if (req.params.commandName === 'land') {
-        // Landing: `/command/land`
-
-        drone.land(function() {});
-
-        res.end('landing complete');
-    } else {
-        res.end('unkowne command');
-    }
-});
-
-app.get('/command/go/:commandName', function(req, res) {
-
-    console.log('Go command Received:', req.url);
-    // Implement a duration for commands that operate continuously.
-    // ex: `/command/clockwise/`
-    // ex: `/command/clockwise/2000`
-    var continuousCommands = ['up', 'down', 'left', 'right', 'forward', 'backward', 'clockwise', 'counterClockwise'];
-
-    if (continuousCommands.indexOf(req.params.commandName) >= 0) {
-
-        res.end(req.params.commandName + ' command complete');
-        drone.move(req.params.commandName, 0.5, 1000, function() {
-            console.log(req.params.commandName + ' command complete');
-        });
-
-    }
-
-    // For commands that require a duration
-    // ex: `/command/go/backFlip`
-    var durationSpecificCommands = ['backFlip', 'frontFlip', 'leftFlip', 'rightFlip'];
-
-    if (durationSpecificCommands.indexOf(req.params.commandName) >= 0) {
-
-        drone.animate(req.params.commandName, 1000, function() {
-            console.log(req.params.commandName + ' completed');
-        });
-        res.end(req.params.commandName + ' command complete');
-    }
-
-});
+require('./lib/http-server.js')(client);
+require('./lib/web-socket.js')(client);
 
 drone.battery(function(level) {
-    console.log('Battery Update:', level + '%');
+    client.broadcasters.forEach(function each(send) {
+        send({
+            event: 'battery',
+            'value': level
+        });
+    });
 });
-
-https.createServer({
-    cert: fs.readFileSync(__dirname + '/certs/server.crt'),
-    key: fs.readFileSync(__dirname + '/certs/server.key')
-}, app).listen(3000);
-console.log('listening');

@@ -22,6 +22,7 @@
     "minimist": "^1.1.1",
     "node-rolling-spider": "FluffyJack/node-rolling-spider",
     "numeral": "^1.5.3",
-    "speakable": "git://github.com/sreuter/node-speakable"
+    "speakable": "git://github.com/sreuter/node-speakable",
+    "ws": "^0.7.2"
   }
 }
