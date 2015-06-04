@@ -21,26 +21,42 @@
 
             var ws;
 
+            function batteryChange(value) {
+                $('#battery').text((value > 10 ? 'Battery ' : '') + value + '%')
+                var bar = $('div.progress-bar');
+                bar.css({
+                    width: value + '%'
+                });
+                if (value < 10) {
+                    bar.removeClass('progress-bar-success')
+                        .removeClass('progress-bar-warning')
+                        .addClass('progress-bar-danger');
+                } else if (value < 20) {
+                    bar.removeClass('progress-bar-success')
+                        .removeClass('progress-bar-danger')
+                        .addClass('progress-bar-warning');
+                }
+            }
+
+            function connectionChange(connected) {
+                if (connected) {
+                    $('#commands').text('Connected').addClass('label-success').removeClass('label-default');
+                } else {
+                    $('#commands').text('Not Connected').addClass('label-default').removeClass('label-success');
+                }
+
+            }
+
             if (WebSocket) {
                 ws = new WebSocket("wss://localhost:3001/");
                 ws.onmessage = function(event) {
                     console.log(event.data);
                     var data = JSON.parse(event.data);
                     if (data.event === 'battery') {
-                        $('#battery').text((data.value > 10 ? 'Battery ' : '') + data.value + '%')
-                        var bar = $('div.progress-bar');
-                        bar.css({
-                            width: data.value + '%'
-                        });
-                        if (data.value < 10) {
-                            bar.removeClass('progress-bar-success')
-                                .removeClass('progress-bar-warning')
-                                .addClass('progress-bar-danger');
-                        } else if (data.value < 20) {
-                            bar.removeClass('progress-bar-success')
-                                .removeClass('progress-bar-danger')
-                                .addClass('progress-bar-warning');
-                        }
+                        batteryChange(data.value);
+                    } else if (data.event === 'connected') {
+                        console.log(data);
+                        connectionChange(data.value);
                     }
                 }
                 ws.onerror = function(err) {
