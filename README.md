@@ -5,7 +5,7 @@ Code repo for Red Barrons NodeCopter Flight team.
 ````
 git clone ...
 npm install
-node index [-t debug|ar-drone|rolling-spider]
+node index.js [-t debug|ar-drone|rolling-spider]
 ````
 
 Rolling spider is default, ar-drone is broken, debug is for debugging witout a drone.
