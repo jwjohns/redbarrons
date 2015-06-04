@@ -1,8 +1,14 @@
 <html>
 
 <head>
-    <title>Testing</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>Drone Voice Command Center</title>
     <script src="https://code.jquery.com/jquery-2.1.4.min.js" charset="utf-8"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">
 </head>
 
 <body>
@@ -21,7 +27,20 @@
                     console.log(event.data);
                     var data = JSON.parse(event.data);
                     if (data.event === 'battery') {
-                        $('#battery').text('Battery: ' + data.value + '%');
+                        $('#battery').text((data.value > 10 ? 'Battery ' : '') + data.value + '%')
+                        var bar = $('div.progress-bar');
+                        bar.css({
+                            width: data.value + '%'
+                        });
+                        if (data.value < 10) {
+                            bar.removeClass('progress-bar-success')
+                                .removeClass('progress-bar-warning')
+                                .addClass('progress-bar-danger');
+                        } else if (data.value < 20) {
+                            bar.removeClass('progress-bar-success')
+                                .removeClass('progress-bar-danger')
+                                .addClass('progress-bar-warning');
+                        }
                     }
                 }
                 ws.onerror = function(err) {
@@ -36,7 +55,7 @@
                 if (!issued) {
                     issued = cmd;
                     console.log('issuing', cmd);
-                    $('#commands').html('<b>' + cmd + '</b>');
+                    $('#commands').text(cmd).addClass('label-success').removeClass('label-default');
                     if (ws) {
                         ws.send(cmd);
                     } else {
@@ -116,7 +135,7 @@
                         recognition.stop();
                         window.start();
                     } else if (!issued) {
-                        $('#commands').text(str);
+                        $('#commands').text(str).addClass('label-default').removeClass('label-success');
                         console.log(str, res);
                         handleBasic(str);
                         handleGo(str);
@@ -207,19 +226,51 @@
 
         });
     </script>
-    <div class="">
-        <button type="button" id="start" onclick="start()">Start</button>
-        <button type="button" id="stop" onclick="stop()">Stop</button>
-        <button type="button" id="takeoff" onclick="run('takeoff')">Takeoff</button>
-        <button type="button" id="left" onclick="run('go/left')">Left</button>
-        <button type="button" id="right" onclick="run('go/right')">Right</button>
-        <button type="button" id="land" onclick="run('land')">Land</button>
-    </div>
 
-    <span id="commands"></span>
+    <style media="screen">
+        button {
+            width: 8em
+        }
+        
+        span.label {
+            /*padding: 0 5.4em*/
+            display: block;
+            width: 10.8em;
+            height: 1.5em;
+        }
+        
+        div.progress {
+            display: inline-block;
+            width: 35em;
+            /*height: 3em;*/
+        }
+    </style>
+
+    <div class="jumbotron">
+        <h1>The Drone Voice Command Sentral</h1>
+    </div>
+    <div class="labels">
+        <h1>
+            <span class="label" id="commands"> </span>
+        </h1>
+        <div class="progress">
+            <div class="progress-bar progress-bar-success" role="progressbar" style="width: 100%">
+                <span id="battery">Battery 100%</span>
+            </div>
+        </div>
+    </div>
+    <div class="buttons">
+        <button type="button" class="btn btn-lg btn-success" id="start" onclick="start()">Start</button>
+        <button type="button" class="btn btn-lg btn-danger" id="stop" onclick="stop()">Stop</button>
+        <button type="button" class="btn btn-lg btn-default" id="takeoff" onclick="run('takeoff')">Takeoff</button>
+        <button type="button" class="btn btn-lg btn-default" id="left" onclick="run('go/left')">Left</button>
+        <button type="button" class="btn btn-lg btn-default" id="right" onclick="run('go/right')">Right</button>
+        <button type="button" class="btn btn-lg btn-default" id="land" onclick="run('land')">Land</button>
+    </div>
     <span id="acceleration"></span>
     <span id="rotation"></span>
-    <span id="battery"></span>
+
+
 </body>
 
 </html>
