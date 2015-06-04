@@ -110,7 +110,11 @@
 
             var basicCmds = {
                 'take off': 'takeoff',
-                'land': 'land'
+                'land': 'land',
+                'play dead': 'emergency',
+                'emergency': 'emergency',
+                'emergancy': 'emergency'
+
             }
 
             function handleBasic(str) {
@@ -229,46 +233,69 @@
 
     <style media="screen">
         button {
-            width: 8em
+            width: 100%
+        }
+        
+        .button-col {
+            padding-left: 0.2em;
+            padding-right: 0.2em;
         }
         
         span.label {
-            /*padding: 0 5.4em*/
             display: block;
-            width: 10.8em;
-            height: 1.5em;
         }
         
         div.progress {
-            display: inline-block;
-            width: 35em;
-            /*height: 3em;*/
+            height: 2.9em;
+            margin-top: 1.3em;
+        }
+        
+        div.progress span {
+            line-height: 2.9em;
         }
     </style>
-
-    <div class="jumbotron">
-        <h1>The Drone Voice Command Sentral</h1>
-    </div>
-    <div class="labels">
-        <h1>
-            <span class="label" id="commands"> </span>
-        </h1>
-        <div class="progress">
-            <div class="progress-bar progress-bar-success" role="progressbar" style="width: 100%">
-                <span id="battery">Battery 100%</span>
+    <div class="container">
+        <div class="jumbotron">
+            <h1>The Drone Voice Command Sentral</h1>
+        </div>
+        <div class="row labels">
+            <div class="col-lg-6">
+                <h1>
+                    <span class="label" id="commands"> </span>
+                </h1>
+            </div>
+            <div class="col-lg-6">
+                <div class="progress">
+                    <div class="progress-bar progress-bar-success" role="progressbar" style="width: 100%">
+                        <span id="battery">Battery 100%</span>
+                    </div>
+                </div>
             </div>
         </div>
+        <div class="row buttons">
+            <div class="col-xs-2 button-col">
+                <button type="button" class="btn btn-lg btn-success" id="start" onclick="start()">Start</button>
+            </div>
+            <div class="col-xs-2 button-col">
+                <button type="button" class="btn btn-lg btn-danger" id="stop" onclick="stop()">Stop</button>
+            </div>
+            <div class="col-xs-2 button-col">
+                <button type="button" class="btn btn-lg btn-default" id="takeoff" onclick="run('takeoff')">Takeoff</button>
+            </div>
+            <div class="col-xs-2 button-col">
+                <button type="button" class="btn btn-lg btn-default" id="left" onclick="run('go/left')">Left</button>
+            </div>
+            <div class="col-xs-2 button-col">
+                <button type="button" class="btn btn-lg btn-default" id="right" onclick="run('go/right')">Right</button>
+            </div>
+            <div class="col-xs-2 button-col">
+                <button type="button" class="btn btn-lg btn-default" id="land" onclick="run('land')">Land</button>
+            </div>
+        </div>
+        <span id="acceleration"></span>
+        <span id="rotation"></span>
     </div>
-    <div class="buttons">
-        <button type="button" class="btn btn-lg btn-success" id="start" onclick="start()">Start</button>
-        <button type="button" class="btn btn-lg btn-danger" id="stop" onclick="stop()">Stop</button>
-        <button type="button" class="btn btn-lg btn-default" id="takeoff" onclick="run('takeoff')">Takeoff</button>
-        <button type="button" class="btn btn-lg btn-default" id="left" onclick="run('go/left')">Left</button>
-        <button type="button" class="btn btn-lg btn-default" id="right" onclick="run('go/right')">Right</button>
-        <button type="button" class="btn btn-lg btn-default" id="land" onclick="run('land')">Land</button>
-    </div>
-    <span id="acceleration"></span>
-    <span id="rotation"></span>
+
 
 
 </body>

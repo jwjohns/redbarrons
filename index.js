@@ -1,5 +1,5 @@
 'use strict';
-
+var exec = require('child_process').exec;
 //RS_B181682
 
 var args = require('minimist')(process.argv, {
@@ -15,7 +15,7 @@ var args = require('minimist')(process.argv, {
 
 var drone = require('./lib/' + args.type + '.js');
 
-var basicCmds = ['takeoff', 'land'];
+var basicCmds = ['takeoff', 'land', 'emergency'];
 var continuousCommands = ['up', 'down', 'left', 'right', 'forward', 'backward', 'clockwise', 'counterClockwise'];
 var durationSpecificCommands = ['backFlip', 'frontFlip', 'leftFlip', 'rightFlip'];
 
@@ -50,3 +50,4 @@ drone.battery(function(level) {
         });
     });
 });
+exec('open https://localhost:3000/index.html');
